@@ -1,5 +1,9 @@
+import styles from '../styles/home.module.scss';
+
 export default function Home() {
   return (
-   <h1>Maick Souza</h1>
+  <h1 className={styles.title}>
+    Maick Souza
+  </h1>
   )
 }
