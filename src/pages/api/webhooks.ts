@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { Readable } from 'stream'
 import Stripe from 'stripe'
 import { stripe } from '../../services/stripe'
-import { saveSubcription } from './_lib/manageSubcription'
+import { saveSubscription } from './_lib/manageSubscription'
 
 async function buffer(readable: Readable) {
   const chunks = []
@@ -23,7 +23,9 @@ export const config = {
 }
 
 const relevantEvents = new Set([
-  'checkout.session.completed'
+  'checkout.session.completed',
+  'customer.subscription.updated',
+  'customer.subscription.deleted'
 ])
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -44,15 +46,25 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (relevantEvents.has(type)) {
       try {
         switch (type) {
+          case 'customer.subscription.updated':
+          case 'customer.subscription.deleted':
+            const subcription = event.data.object as Stripe.Subscription
+
+            await saveSubscription(
+              subcription.id,
+              subcription.customer.toString(),
+              false
+              )
+
+            break;
           case 'checkout.session.completed':
+            const checkoutSession = event.data.object as Stripe.Checkout.Session
 
-          const checkoutSession = event.data.object as Stripe.Checkout.Session
-
-          await saveSubcription(
-            checkoutSession.subscription.toString(),
-            checkoutSession.customer.toString()
-          )
-
+            await saveSubscription(
+              checkoutSession.subscription.toString(),
+              checkoutSession.customer.toString(),
+              true
+            )
             break;
           default:
             throw new Error('Unhandled event')
@@ -66,6 +78,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   } else {
     res.setHeader('Allow', 'POST')
     res.status(405).end('Method not allowed')
-  }
- 
+  } 
 }
