@@ -49,7 +49,8 @@ export const getStaticProps: GetStaticProps = async () => {
     pageSize: 100
   })
 
-  console.log(JSON.stringify(response, null, 2))
+  // exibe também os objetos dentro do objeto
+  // console.log(JSON.stringify(response, null, 2))
 
   const posts = response.results.map(post => {
     return {
