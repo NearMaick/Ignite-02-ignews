@@ -58,11 +58,7 @@ export default function PostPreview({ post }: PostPreviewProps) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
-    paths: [
-      {
-        params: { slug: 'os-impactos-da-tecnologia-na-educacao' }
-      }
-    ],
+    paths: [],
     fallback: 'blocking'
   }
 }
